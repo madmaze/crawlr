@@ -5,16 +5,14 @@ import threading
 import SocketServer
 import os
 import time
-import pymongo
+import mongoConfig as mc
+import mongoTools
 
 #SocketServer.BaseRequestHandler
 class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
     def __init__(self, request, client_address, server):
+        self.mt = mongoTools.mongoTools(mc.usr,mc.pw,mc.url,mc.port,mc.dbname)
         SocketServer.StreamRequestHandler.__init__(self, request, client_address, server)
-        self.dbconn = pymongo.Connection('mongodb://crawlrdb:crawlrpw@ds037407.mongolab.com:37407/madmaze-testdb')
-        self.queue = self.dbconn['madmaze-queue']
-        self.finaldb = self.dbconn['madmaze-finaldb']
-        # db.test_collection.insert({'inurl':'http://google.com/x','outurl':['fb','g+','other']})
         # http://blog.pythonisito.com/2012/01/getting-started-with-mongodb-and-python.html
         
     def handle(self):
@@ -30,6 +28,7 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
         if bits[0] == "add":
             print "adding:", bits[1]
             print "\tcount:", bits[2]
+            self.mt.insertQueue(bits[1],bits[2])
         else:
             print "not yet implemented"
         

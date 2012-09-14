@@ -5,14 +5,16 @@ Created on Sep 9, 2012
 @author: madmaze
 '''
 import pymongo
-import mongoConfig
+import mongoConfig as mc
 
 class mongoTools:
-    def __init__(self,usr,pw,url,dbname):
-        self.conn=pymongo.Connection(mongoConfig.mongourl)
+    def __init__(self,usr,pw,url,port,dbname):
+        mongoURI='mongodb://'+usr+':'+pw+'@'+url+':'+port+'/'+dbname
+        self.conn=pymongo.Connection(mongoURI)
         self.usr=usr
         self.pw=pw
         self.url=url
+        self.port=port
         self.dbname=dbname
         
     
@@ -24,11 +26,12 @@ class mongoTools:
             db.madmaze_queue.insert({"_id":url, "cnt": cnt, "done": 0})
         else:
             err={'n':0}
+            failCnt=0
             #refs:
             #http://www.mongodb.org/display/DOCS/Atomic+Operations#AtomicOperations-%22UpdateifCurrent%22
             #http://www.mongodb.org/display/DOCS/Updating#Updating-%7B%7Bupserts%7D%7D
             #http://api.mongodb.org/python/2.3/api/pymongo/collection.html#pymongo.collection.Collection.update
-            while err['n'] != 1:
+            while err['n'] != 1 and failCnt<10:
                 orig = res['cnt']
                 res['cnt'] += cnt
                 err = db.madmaze_queue.update({"_id":url, "cnt": orig}, {"$set": {"cnt": res['cnt']} }, safe=True)
@@ -36,10 +39,13 @@ class mongoTools:
                 if err['n']==0:
                     print "update failed..",err
                     res = db.madmaze_queue.find_one({"_id":url})
+                    failCnt+=1
                 else:
                     print "update successful"
+            if failCnt >= 10:
+                print "failCnt above 10.. are we locked? did we loose connection?"
              
         
 
-mt = mongoTools("usr","pw","url","dbname")
-mt.insertQueue("google.com/test2",1)
+#mt = mongoTools(mc.usr,mc.pw,mc.url,mc.port,mc.dbname)
+#mt.insertQueue("google.com/test2",1)
