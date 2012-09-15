@@ -28,7 +28,7 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
         if bits[0] == "add":
             print "adding:", bits[1]
             print "\tcount:", bits[2]
-            self.mt.insertQueue(bits[1],bits[2])
+            self.mt.insertQueue(bits[1],int(bits[2]))
         else:
             print "not yet implemented"
         
