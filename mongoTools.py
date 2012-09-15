@@ -34,11 +34,11 @@ class mongoTools:
             while err['n'] != 1 and failCnt<10:
                 orig = res['cnt']
                 res['cnt'] = int(res['cnt']) + cnt
-                err = db.madmaze_queue.update({"_id":url, "cnt": orig}, {"$set": {"cnt": res['cnt']} }, safe=True)
+                err = db['madmaze_queue'].update({"_id":url, "cnt": orig}, {"$set": {"cnt": res['cnt']} }, safe=True)
                 #print "added to it",res, orig
                 if err['n']==0:
                     print "update failed..",err
-                    res = db.madmaze_queue.find_one({"_id":url})
+                    res = db['madmaze_queue'].find_one({"_id":url})
                     failCnt+=1
                 #else:
                     #print "update successful"
@@ -46,3 +46,13 @@ class mongoTools:
                 print "failCnt above 10.. are we locked? did we loose connection?"
                 return -1
             return 0
+
+    def markDone(self,url):
+        db = self.conn[self.dbname]
+        res = db['madmaze_queue'].find_one({"_id":url})
+        if res == None:
+            #print "insert"
+            db['madmaze_queue'].insert({"_id":url, "done": 1})
+        else:
+            db['madmaze_queue'].madmaze_queue.update({"_id":url, "done": 0}, {"$set": {"done": 1} })
+

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#import sys
+
 import socket
 import threading
 import SocketServer
@@ -41,10 +41,13 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
                         fail+=1
                     else:
                         x+=1
+                elif bits[0] == "done":
+                    res = self.mt.markDone(bits[1])
+                    print bits[1]," marked done."
                 else:
                     print "not yet implemented |",packet,"|"
                     
-        print "Items added: %d/%d: " % ((x-fail),x)
+        print "Items added: %d/%d" % ((x-fail),x)
         
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):

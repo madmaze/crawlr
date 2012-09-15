@@ -78,5 +78,7 @@ class seed:
 		totalPacket=""
 		for v in self.newUrls.keys():
 			totalPacket+="<add|"+v+"|"+str(self.newUrls[v])+">|"
+		totalPacket+="<done|"+self.url+">"
+		
 		self.client(socket.gethostbyname(self.HOST), self.PORT, totalPacket)
 			# submit to queue to processing
