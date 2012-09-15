@@ -73,7 +73,10 @@ class seed:
 				else:
 					self.newUrls[v]=1
 				#print v
+		
+		#build string
+		totalPacket=""
 		for v in self.newUrls.keys():
-			self.client(socket.gethostbyname(self.HOST), self.PORT, "<add|"+v+"|"+str(self.newUrls[v])+">")
-			
+			totalPacket+="<add|"+v+"|"+str(self.newUrls[v])+">|"
+		self.client(socket.gethostbyname(self.HOST), self.PORT, totalPacket)
 			# submit to queue to processing

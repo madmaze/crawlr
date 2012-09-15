@@ -3,10 +3,12 @@
 import socket
 import threading
 import SocketServer
-import os
-import time
+import sys
+import signal
 import mongoConfig as mc
 import mongoTools
+
+server=""
 
 #SocketServer.BaseRequestHandler
 class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
@@ -24,13 +26,25 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
         self.request.send(response)
     
     def addToQueue(self, data):
-        bits = data.strip().strip("<").strip(">").split("|")
-        if bits[0] == "add":
-            print "adding:", bits[1]
-            print "\tcount:", bits[2]
-            self.mt.insertQueue(bits[1],int(bits[2]))
-        else:
-            print "not yet implemented"
+        print "adding items to queue..."
+        fail=0
+        x=0
+        for packet in data.strip("\n").split(">|"):
+            if len(packet)>0:
+                bits = packet.strip().strip("<").strip(">").split("|")
+                if bits[0] == "add":
+                    #print "adding:", bits[1]
+                    #print "\tcount:", bits[2]
+                    res = self.mt.insertQueue(bits[1],int(bits[2]))
+                    if res < 0:
+                        print "issue inserting into database.."
+                        fail+=1
+                    else:
+                        x+=1
+                else:
+                    print "not yet implemented |",packet,"|"
+                    
+        print "Items added: %d/%d: " % ((x-fail),x)
         
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
@@ -43,6 +57,12 @@ def client(ip, port, message):
     response = sock.recv(1024)
     print "Received: %s" % response
     sock.close()
+
+# catch signal to gracefully shut down
+def signal_handler(signal, frame):
+        print "shutting down.."
+        server.shutdown()
+        sys.exit(0)
     
 
 if __name__ == "__main__":
@@ -55,16 +75,12 @@ if __name__ == "__main__":
     # Start a thread with the server -- that thread will then start one
     # more thread for each request
     server_thread = threading.Thread(target=server.serve_forever)
-    # Exit the server thread when the main thread terminates
-    #server_thread.setDaemon(True)
+    
+    # set the CTRL+C signal handler to exit gracefully
+    signal.signal(signal.SIGINT, signal_handler)
+    
     server_thread.start()
     print "Server loop running in thread:", server_thread.getName()
-
-    #for i in range (0,1000):
-    #    client(ip, port, "Hello World"+str(i))
-    while os.path.isfile(".go"):
-        time.sleep(10)
-        print "found \".go\" to kill 'rm .go'.."
     
-    print "shutting down.."
-    server.shutdown()
+    signal.pause()
+    

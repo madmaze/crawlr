@@ -9,7 +9,7 @@ import pymongo
 class mongoTools:
     def __init__(self,usr,pw,url,port,dbname):
         mongoURI='mongodb://'+usr+':'+pw+'@'+url+':'+port+'/'+dbname
-        print "in init~~~~~~~~~~~~~~~~~~~~~~<<<<<<<<<<<<<<<"
+        print "Init mongoDB connection"
         self.conn=pymongo.Connection(mongoURI)
         self.usr=usr
         self.pw=pw
@@ -22,7 +22,7 @@ class mongoTools:
         db = self.conn[self.dbname]
         res = db['madmaze_queue'].find_one({"_id":url})
         if res == None:
-            print "insert"
+            #print "insert"
             db['madmaze_queue'].insert({"_id":url, "cnt": cnt, "done": 0})
         else:
             err={'n':0}
@@ -40,7 +40,9 @@ class mongoTools:
                     print "update failed..",err
                     res = db.madmaze_queue.find_one({"_id":url})
                     failCnt+=1
-                else:
-                    print "update successful"
+                #else:
+                    #print "update successful"
             if failCnt >= 10:
                 print "failCnt above 10.. are we locked? did we loose connection?"
+                return -1
+            return 0
