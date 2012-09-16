@@ -17,6 +17,7 @@ class mongoTools:
         self.port=port
         self.queueCol='queueCol'
         self.dbname=dbname
+        self.todoCursor=None
         
     
     def insertQueue(self,url,cnt):
@@ -53,8 +54,27 @@ class mongoTools:
         db = self.conn[self.dbname]
         res = db[self.queueCol].find_one({"_id":url})
         if res == None:
-            #print "insert"
             db[self.queueCol].insert({"_id":url, "cnt": 0, "done": 1})
         else:
             db[self.queueCol].madmaze_queue.update({"_id":url, "done": 0}, {"$set": {"done": 1} })
+    
+    # grab the shared database cursor to non-crawled urls.
+    #    if none exist or we have come to an end, grab a new one
+    #    then return as many urls as are available
+    def requestURLs(self,cnt):
+        db = self.conn[self.dbname]
+        
+        if self.todoCursor == None or self.todoCursor.alive == False:
+            self.todoCursor = db[self.queueCol].find({"done":0})
+            # check is anything was left/is found else return none
+            if self.todoCursor.alive != True:
+                return '<none>'
+        packet="<" 
+        for i in range(cnt):
+            if self.todoCursor.alive:
+                res = next(self.todoCursor)
+                packet+=res['_id']+"|"
+        
+        packet+=">"
+        return packet
 

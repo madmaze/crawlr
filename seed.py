@@ -3,6 +3,7 @@
 import urllib2
 import socket
 from HTMLParser import HTMLParser
+import clientTools
 
 
 class HTMLraper(HTMLParser):
@@ -36,19 +37,12 @@ class seed:
 	PORT = 65001
 	
 	def __init__(self,url='',domain="",userAgent='',depth=0):
+		self.cT = clientTools.clientTools()
 		self.url = url
 		self.domain = domain
 		self.userAgent = userAgent
 		self.depth = depth
 		self.newUrls={}
-	
-	def client(self, ip, port, message):
-		sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		sock.connect((ip, port))
-		sock.sendall(message+"\n")
-		response = sock.recv(1024)
-		print "Received: %s" % response
-		sock.close()
 	
 	def crawl(self):
 		headers = {'User-Agent' : self.userAgent}
@@ -80,5 +74,6 @@ class seed:
 			totalPacket+="<add|"+v+"|"+str(self.newUrls[v])+">|"
 		totalPacket+="<done|"+self.url+">"
 		
-		self.client(socket.gethostbyname(self.HOST), self.PORT, totalPacket)
-			# submit to queue to processing
+		resp = self.cT.client(totalPacket)
+		print resp
+		

@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 
 import seed
+import clientTools
 
-s = seed.seed(url="http://taidaceli.tumblr.com",domain="tumblr.com",userAgent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.77 Safari/537.1")
+cT = clientTools.clientTools()
 
-s.crawl()
+urls = cT.client("<request|2>")
+
+print urls
+
+#s = seed.seed(url="http://taidaceli.tumblr.com",domain="tumblr.com",userAgent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.77 Safari/537.1")
+
+#s.crawl()

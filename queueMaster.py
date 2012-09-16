@@ -7,8 +7,11 @@ import sys
 import signal
 import mongoConfig as mc
 import mongoTools
+import singletonObj
 
+queueLock = threading.Lock()
 server=""
+firstInst=singletonObj.singletonObj()
 
 #SocketServer.BaseRequestHandler
 class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
@@ -19,31 +22,55 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
         
     def handle(self):
         data = self.rfile.readline()
-        self.addToQueue(data)
-        cur_thread = threading.currentThread()
-        response = "%s: %s" % (cur_thread.getName(), "got it")
-        self.request.send(response)
+        resp = self.manageQueue(data)
+        #cur_thread = threading.currentThread()
+        #response = "%s: %s" % (cur_thread.getName(), "got it")
+        print "||",resp,"||"
+        self.request.send(resp)
     
-    def addToQueue(self, data):
-        print "adding items to queue..."
+    def manageQueue(self, data):
         fail=0
         x=0
-        for packet in data.strip("\n").split(">|"):
-            if len(packet)>0:
-                bits = packet.strip().strip("<").strip(">").split("|")
-                if bits[0] == "add":
-                    res = self.mt.insertQueue(bits[1],int(bits[2]))
-                    if res < 0:
-                        print "issue inserting into database.."
-                        fail+=1
-                    x+=1
-                elif bits[0] == "done":
-                    res = self.mt.markDone(bits[1])
-                    print bits[1]," marked done."
+        resp=""
+        if "<add|" in data:
+            print "adding items to queue..."
+            for packet in data.strip("\n").split(">|"):
+                if len(packet)>0:
+                    bits = packet.strip().strip("<").strip(">").split("|")
+                    if bits[0] == "add":
+                        res = self.mt.insertQueue(bits[1],int(bits[2]))
+                        if res < 0:
+                            print "issue inserting into database.."
+                            fail+=1
+                        x+=1
+                    elif bits[0] == "done":
+                        res = self.mt.markDone(bits[1])
+                        print bits[1]," marked done."
+                    else:
+                        print "not yet implemented |",packet,"|"
+                        
+            resp = "Items added: %d/%d" % ((x-fail),x)
+        elif "<request|" in data:
+            # we are locking here to pass back and forth a singleton
+            #    containing one instance of mongoTools so that when
+            #    we are requesting TODOs, we can iterate over the
+            #    cursor returned to us by the DB without loosing track
+            #    of where we are.
+            singleMongoTools=singletonObj.singletonObj()
+            queueLock.acquire()
+            try:
+                
+                bits = data.strip().strip("<").strip(">").split("|")
+                if bits[0] == "request":
+                    resp = singleMongoTools.mt.requestURLs(int(bits[1]))
                 else:
-                    print "not yet implemented |",packet,"|"
-                    
-        print "Items added: %d/%d" % ((x-fail),x)
+                    resp = "malformed packet: ",data
+            finally:
+                queueLock.release()
+        else:
+            resp = "malformed packet: ",data
+            
+        return resp
         
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
