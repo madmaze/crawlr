@@ -29,7 +29,7 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
         fail=0
         x=0
         resp=""
-        if "<add|" in data:
+        if "<add|" in data or "<done|" in data:
             print "adding items to queue..."
             for packet in data.strip("\n").split(">|"):
                 if len(packet)>0:

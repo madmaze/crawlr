@@ -82,5 +82,7 @@ class seed:
 		else:
 			print "skipping:",self.url
 			print respHeader["Content-Type"]
+			resp = self.cT.client("<done|"+self.url+">")
+			print resp
 			return -1
 		

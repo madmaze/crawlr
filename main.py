@@ -8,7 +8,7 @@ cT = clientTools.clientTools()
 loopCnt=1
 requestSize=5
 skipCnt=0
-while True:
+while loopCnt<100:
     urls = cT.client("<request|"+requestSize+">")
     todoList = urls.strip('<>\n').split('|')
     #print todoList
