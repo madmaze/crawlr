@@ -29,6 +29,7 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
         fail=0
         x=0
         resp=""
+        # TODO: make sure to save which urls linked to where
         if "<add|" in data or "<done|" in data:
             print "adding items to queue..."
             for packet in data.strip("\n").split(">|"):
