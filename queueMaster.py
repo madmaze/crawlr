@@ -20,7 +20,6 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         data = self.rfile.readline()
         self.addToQueue(data)
-        #data = self.request.recv(1024)
         cur_thread = threading.currentThread()
         response = "%s: %s" % (cur_thread.getName(), "got it")
         self.request.send(response)
@@ -33,14 +32,11 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
             if len(packet)>0:
                 bits = packet.strip().strip("<").strip(">").split("|")
                 if bits[0] == "add":
-                    #print "adding:", bits[1]
-                    #print "\tcount:", bits[2]
                     res = self.mt.insertQueue(bits[1],int(bits[2]))
                     if res < 0:
                         print "issue inserting into database.."
                         fail+=1
-                    else:
-                        x+=1
+                    x+=1
                 elif bits[0] == "done":
                     res = self.mt.markDone(bits[1])
                     print bits[1]," marked done."
