@@ -2,13 +2,21 @@
 
 import seed
 import clientTools
+import mongoConfig as mc
 
 cT = clientTools.clientTools()
-
-urls = cT.client("<request|2>")
-
-print urls
-
-#s = seed.seed(url="http://taidaceli.tumblr.com",domain="tumblr.com",userAgent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.77 Safari/537.1")
-
-#s.crawl()
+loopCnt=1
+requestSize=5
+skipCnt=0
+while True:
+    urls = cT.client("<request|"+requestSize+">")
+    todoList = urls.strip('<>\n').split('|')
+    #print todoList
+    for todo in todoList:
+        if todo != "":
+            print "processing: ",todo
+            s = seed.seed(url=todo,domain="tumblr.com",userAgent=mc.uA)
+            if s.crawl() < 0:
+                skipCnt+=1
+    print "requests done:",(loopCnt*requestSize)
+    print "skipCnt:",skipCnt

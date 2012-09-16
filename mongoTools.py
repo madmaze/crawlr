@@ -9,7 +9,7 @@ import pymongo
 class mongoTools:
     def __init__(self,usr,pw,url,port,dbname):
         mongoURI='mongodb://'+usr+':'+pw+'@'+url+':'+port+'/'+dbname
-        print "Init mongoDB connection"
+        #print "Init mongoDB connection"
         self.conn=pymongo.Connection(mongoURI)
         self.usr=usr
         self.pw=pw
@@ -54,9 +54,17 @@ class mongoTools:
         db = self.conn[self.dbname]
         res = db[self.queueCol].find_one({"_id":url})
         if res == None:
-            db[self.queueCol].insert({"_id":url, "cnt": 0, "done": 1})
+            res = db[self.queueCol].insert({"_id":url, "cnt": 0, "done": 1},safe=True)
+            print "marking done by inserting new", res
+            if res['n']==0:
+                    print "insert failed..",res
+                    return -1            
         else:
-            db[self.queueCol].madmaze_queue.update({"_id":url, "done": 0}, {"$set": {"done": 1} })
+            res = db[self.queueCol].update({"_id":url, "done": 0}, {"$set": {"done": 1} },safe=True)
+            if res['n']==0:
+                    print "update failed..",res
+                    return -1
+        return 0
     
     # grab the shared database cursor to non-crawled urls.
     #    if none exist or we have come to an end, grab a new one

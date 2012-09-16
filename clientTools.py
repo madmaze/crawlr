@@ -22,4 +22,5 @@ class clientTools:
         
         sock.close()
         
-        return "Received: %s" % response
+        #print "Received: %s" % response
+        return response

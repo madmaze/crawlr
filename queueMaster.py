@@ -23,9 +23,6 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
     def handle(self):
         data = self.rfile.readline()
         resp = self.manageQueue(data)
-        #cur_thread = threading.currentThread()
-        #response = "%s: %s" % (cur_thread.getName(), "got it")
-        print "||",resp,"||"
         self.request.send(resp)
     
     def manageQueue(self, data):
@@ -60,8 +57,9 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
             queueLock.acquire()
             try:
                 
-                bits = data.strip().strip("<").strip(">").split("|")
+                bits = data.strip('<>\n').split("|")
                 if bits[0] == "request":
+                    print "processing request.."
                     resp = singleMongoTools.mt.requestURLs(int(bits[1]))
                 else:
                     resp = "malformed packet: ",data
