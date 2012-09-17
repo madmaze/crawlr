@@ -6,7 +6,7 @@ import mongoConfig as mc
 
 cT = clientTools.clientTools()
 loopCnt=1
-requestSize=5
+requestSize=10
 skipCnt=0
 while loopCnt<100:
     urls = cT.client("<request|"+str(requestSize)+">")

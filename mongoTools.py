@@ -50,17 +50,30 @@ class mongoTools:
                 return -1
             return 0
 
-    def markDone(self,url):
+    def markDone(self,url,linkList={}):
         db = self.conn[self.dbname]
         res = db[self.queueCol].find_one({"_id":url})
+        links=""
+        if len(linkList) > 0:
+            for n,link in enumerate(linkList):
+                if n!= 0:
+                    links+=',"'+link+'"'
+                else:
+                    links+='"'+link+'"'
         if res == None:
-            res = db[self.queueCol].insert({"_id":url, "cnt": 0, "done": 1},safe=True)
+            if len(linkList) > 0:
+                res = db[self.queueCol].insert({"_id":url, "cnt": 0, "done": 1, "urls": linkList},safe=True)
+            else:
+                res = db[self.queueCol].insert({"_id":url, "cnt": 0, "done": 1},safe=True)
             print "marking done by inserting new", res
             if res['n']==0:
                     print "insert failed..",res
                     return -1            
         else:
-            res = db[self.queueCol].update({"_id":url, "done": 0}, {"$set": {"done": 1} },safe=True)
+            if len(linkList) > 0:
+                res = db[self.queueCol].update({"_id":url, "done": 0}, {"$set": {"done": 1, "urls": linkList} },safe=True)
+            else:
+                res = db[self.queueCol].update({"_id":url, "done": 0}, {"$set": {"done": 1} },safe=True)
             if res['n']==0:
                     print "update failed..",res
                     return -1

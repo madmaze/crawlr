@@ -37,6 +37,7 @@ class seed:
 	HOST = "localhost"
 	PORT = 65001
 	
+	
 	def __init__(self,url='',domain="",userAgent='',depth=0):
 		self.cT = clientTools.clientTools()
 		self.url = url
@@ -46,6 +47,7 @@ class seed:
 		self.newUrls={}
 	
 	def crawl(self):
+		respHeader=""
 		headers = {'User-Agent' : self.userAgent}
 		req = urllib2.Request(self.url,None,headers)
 		try:

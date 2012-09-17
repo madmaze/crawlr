@@ -29,6 +29,7 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
         fail=0
         x=0
         resp=""
+        links=[]
         # TODO: make sure to save which urls linked to where
         if "<add|" in data or "<done|" in data:
             print "adding items to queue..."
@@ -37,15 +38,17 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
                     bits = packet.strip().strip("<").strip(">").split("|")
                     if bits[0] == "add":
                         if bits[2]=="":
-                            print bits
+                            print "blank field in bits[2]",bits
                         else:
                             res = self.mt.insertQueue(bits[1],int(bits[2]))
                             if res < 0:
                                 print "issue inserting into database.."
                                 fail+=1
+                            else:
+                                links.append(bits[1])
                             x+=1
                     elif bits[0] == "done":
-                        res = self.mt.markDone(bits[1])
+                        res = self.mt.markDone(bits[1], links)
                         print bits[1]," marked done."
                     else:
                         print "not yet implemented |",packet,"|"
