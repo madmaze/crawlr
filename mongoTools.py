@@ -71,18 +71,23 @@ class mongoTools:
     #    then return as many urls as are available
     def requestURLs(self,cnt):
         db = self.conn[self.dbname]
-        
-        if self.todoCursor == None or self.todoCursor.alive == False:
-            self.todoCursor = db[self.queueCol].find({"done":0})
-            # check is anything was left/is found else return none
-            if self.todoCursor.alive != True:
-                return '<none>'
-        packet="<" 
-        for i in range(cnt):
-            if self.todoCursor.alive:
-                res = next(self.todoCursor)
-                packet+=res['_id']+"|"
-        
-        packet+=">"
-        return packet
+        try:
+            if self.todoCursor == None or self.todoCursor.alive == False:
+                self.todoCursor = db[self.queueCol].find({"done":0},timeout=False)
+                # check is anything was left/is found else return none
+                if self.todoCursor.alive != True:
+                    return '<none>'
+            packet="<" 
+            for i in range(cnt):
+                if self.todoCursor.alive:
+                    res = self.todoCursor.next()
+                    packet+=res['_id']+"|"
+            
+            packet+=">"
+            return packet
+        except pymongo.errors.OperationFailure, e:
+            print "Error in requestURLs:",e.code
+        except:
+            print "Error in requestURLs"
+        return "<none>"
 

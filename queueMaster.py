@@ -36,11 +36,14 @@ class ThreadedTCPRequestHandler(SocketServer.StreamRequestHandler):
                 if len(packet)>0:
                     bits = packet.strip().strip("<").strip(">").split("|")
                     if bits[0] == "add":
-                        res = self.mt.insertQueue(bits[1],int(bits[2]))
-                        if res < 0:
-                            print "issue inserting into database.."
-                            fail+=1
-                        x+=1
+                        if bits[2]=="":
+                            print bits
+                        else:
+                            res = self.mt.insertQueue(bits[1],int(bits[2]))
+                            if res < 0:
+                                print "issue inserting into database.."
+                                fail+=1
+                            x+=1
                     elif bits[0] == "done":
                         res = self.mt.markDone(bits[1])
                         print bits[1]," marked done."
