@@ -8,7 +8,8 @@ each agent polls the queueMaster for jobs to do(pages to parse) and then adds th
 
 
 License:
-
+---
+```
 Copyright (c) 2012 Matthias Lee, matthias.a.lee[]gmail.com
 Last edited: Sept 25th 2012
 
@@ -24,3 +25,4 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```
